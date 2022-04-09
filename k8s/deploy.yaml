@@ -1,3 +1,19 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: devzat-config
+  labels:
+    k8s-app: devzat
+    kubernetes.io/cluster-service: "true"
+data:
+  devzat-config.yml: |
+    port: 22
+    alt_port: 443
+    profile_port: 5555
+    key_file: devzat-sshkey
+    data_dir: devzat-data
+    admins:
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -20,11 +36,14 @@ spec:
         imagePullPolicy: Always
         ports:
           - containerPort: 443
-#        command:
-#         - tail
-#        args:
-#          - -f
-#          - /dev/null
+        volumeMounts:
+          - name: devzat-config
+            mountPath: /app/devzat-config.yml
+            subPath: devzat-config.yml
+      volumes:
+        - name: devzat-config
+          configMap:
+            name: devzat-config
 ---
 apiVersion: v1
 kind: Service
